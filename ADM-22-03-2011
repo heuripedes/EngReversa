@@ -1,0 +1,60 @@
+create table venda(idvenda serial primary key,
+			valor integer)
+create table produto(
+			idproduto serial primary key,
+			nome varchar(100),
+			max integer,
+			min integer,
+			quantidade integer
+		)
+create table itens(	iditens serial primary key,
+			idvenda integer ,
+			idproduto integer ,
+			quantidade integer,
+			FOREIGN KEY (idvenda) REFERENCES venda (idvenda),
+			FOREIGN KEY (idproduto) REFERENCES produto (idproduto)
+			)
+drop table itens
+
+SELECT c.column_name,
+       (select pg_catalog.col_description(oid, c.ordinal_position::int) from
+pg_catalog.pg_class pc where pc.relname = c.table_name) as
+column_comment,
+       tc.constraint_type,
+       c.column_default,
+       c.is_nullable,
+       c.data_type,
+       c.character_maximum_length,
+       k2.table_name as fk_table,
+       k2.column_name as fk_column
+FROM information_schema.columns as c
+LEFT JOIN information_schema.key_column_usage as k
+       ON c.table_catalog = k.table_catalog
+               AND c.table_schema = k.table_schema
+               AND c.table_name = k.table_name
+               AND c.column_name = k.column_name
+LEFT JOIN information_schema.referential_constraints as rc
+       ON c.table_catalog = rc.constraint_catalog
+               AND c.table_schema = rc.constraint_schema
+               AND k.constraint_name = rc.constraint_name
+LEFT JOIN information_schema.key_column_usage as k2
+       ON rc.unique_constraint_catalog = k2.constraint_catalog
+               AND rc.unique_constraint_schema = k2.constraint_schema
+               AND rc.unique_constraint_name = k2.constraint_name
+               AND k.position_in_unique_constraint = k2.ordinal_position
+LEFT JOIN information_schema.table_constraints as tc
+       ON c.table_catalog = tc.table_catalog
+               AND c.table_schema = tc.table_schema
+               AND c.table_name = tc.table_name
+               AND k.constraint_name = tc.constraint_name
+               AND tc.constraint_type <> 'CHECK'
+WHERE c.table_catalog = 'jp'
+       AND c.table_schema = 'public'
+       AND c.table_name = 'produto'
+ORDER BY c.ordinal_position,
+       tc.constraint_type DESC;
+
+select *from information_schema.columns
+select *from information_schema.key_column_usage
+select *from information_schema.table_constraints
+select *from information_schema.referential_constraints
